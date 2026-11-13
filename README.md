@@ -53,11 +53,7 @@ The supplied workbook has no provided source URL or documentation of AQI method/
 - `data/historical_delhi_aqi.csv`: transparent CSV extract with City, Date, AQI only.
 - `data/station_history_template.csv`: blank header template for future verified data.
 - `tests/core.test.js`: basic software tests; run with `node tests/core.test.js` if Node.js is installed.
-- The updated combined portfolio PDF and START_HERE_Submission_Checklist.txt are supplied separately in the main submission pack.
 
-## Suggested next step before any real pilot
-
-Obtain verified station-level records with documented source, unit/method and timestamps; have a reviewer label flagged and sampled unflagged rows; measure false alerts, missed issues, freshness catches, and review workload; and get school feedback before considering any operational use. No pilot or real-world deployment is claimed in this portfolio.
 
 ## References
 
