@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Offline prototype for a human-verified Delhi school clean-air readiness workflow. No live AQI feed or automated decisions.">
+  <meta name="theme-color" content="#123c35">
+  <title>Delhi School Clean-Air Readiness Loop</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="historical-data.js"></script>
+  <script defer src="core.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-head">
+    <div class="topbar"><span class="brand-mark" aria-hidden="true">A</span><span>AI for Sustainability · Portfolio Prototype</span><span class="offline-tag"><i></i>Offline · no live feed</span></div>
+    <div class="hero wrap">
+      <div class="eyebrow">Delhi · school-managed readiness concept</div>
+      <h1>Delhi School<br><em>Clean-Air Readiness Loop</em></h1>
+      <p class="lede">A local-first prototype that helps a reviewer inspect unusual or stale AQI records before a school lead checks current official directions.</p>
+      <div class="notice" role="note"><strong>Important:</strong> This is a student prototype, not an operational monitoring or alert service. Historical workbook data is shown only for context; it is not used to train the model. No health advice, school closure, class-mode decision, or message is generated or sent.</div>
+      <div class="hero-facts"><span>Historical context: 2,191 supplied daily observations</span><span>AI method: Isolation Forest review score</span><span>Human approval stays in control</span></div>
+    </div>
+  </header>
+
+  <nav class="section-nav" aria-label="Page sections"><div class="wrap"><a href="#history">Historical context</a><a href="#review">Data-quality review</a><a href="#workflow">Human workflow</a><a href="#limits">Limitations &amp; safeguards</a></div></nav>
+
+  <main id="main" class="wrap main-content">
+    <section id="history" class="section-block">
+      <div class="section-heading"><div><span class="kicker">01 · Explore &amp; visualize</span><h2>What the supplied workbook shows</h2><p>Retrospective descriptive statistics from the cleaned assignment workbook—not current conditions or a forecast.</p></div><span class="section-index">01</span></div>
+      <div class="metric-grid">
+        <article class="metric"><span>Observed dates</span><strong>2,191</strong><small>2018–2024 supplied series</small></article>
+        <article class="metric"><span>November mean AQI</span><strong>349.81</strong><small>Compared with 92.81 in August</small></article>
+        <article class="metric"><span>AQI values above 300</span><strong>496</strong><small>22.64% of observations; numerical threshold only</small></article>
+        <article class="metric"><span>Data coverage gap</span><strong>366</strong><small>All of 2022 + 29 Feb 2020 missing</small></article>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title"><div><h3>Mean AQI by calendar month</h3><p>Means pooled across available years. Month labels are based on the supplied records.</p></div><span class="chart-key"><i></i>Mean AQI</span></div>
+        <div id="monthChart" class="chart" role="img" aria-label="Column chart of mean AQI by month from the supplied historical dataset"></div>
+        <p class="caption">Source: user-supplied cleaned workbook. The workbook’s original provenance and pollutant units are undocumented; PM2.5 and PM10 are exact fixed multiples of AQI and are excluded from the prototype’s model.</p>
+      </div>
+      <div class="insight-row"><div class="insight-mark">↗</div><p><strong>Why this matters to the project:</strong> the seasonal contrast motivates planning ahead. It does not establish causes, predict a future reading, or prove a current school coordination gap; those would need separate validation.</p></div>
+    </section>
+
+    <section id="review" class="section-block">
+      <div class="section-heading"><div><span class="kicker">02 · Design &amp; build</span><h2>Run a local data-quality review</h2><p>Choose a station-level CSV on your device. The file stays in this browser session; nothing is uploaded.</p></div><span class="section-index">02</span></div>
+      <div class="review-grid">
+        <div class="panel upload-panel">
+          <div class="step-label"><span>01</span><div><strong>Select station history</strong><small>Needs verified source and timezone-aware observations</small></div></div>
+          <label class="file-picker" for="csvFile"><span class="file-icon" aria-hidden="true">↑</span><span><strong>Choose a CSV file</strong><small id="fileName">No file selected</small></span><input id="csvFile" type="file" accept=".csv,text/csv"></label>
+          <div class="schema-box"><strong>Required columns</strong><code>station_id, observed_at, aqi, source_url</code><small>Use ISO 8601 timestamps with <code>Z</code> or an explicit offset, e.g. <code>2026-11-13T08:30:00+05:30</code>. The source URL must use HTTPS.</small><a href="data/station_history_template.csv" download>Download the blank CSV template</a></div>
+          <div class="review-controls">
+            <label for="queuePercent">Exploratory review queue: <output id="queuePercentOut">5%</output><input id="queuePercent" type="range" min="1" max="15" value="5"></label>
+            <small>Default 5% is an unvalidated demo setting, not a recommended operational threshold.</small>
+            <label for="freshnessHours">Reviewer-set maximum age for latest record (hours)<input id="freshnessHours" type="number" min="1" max="720" value="24"></label>
+            <small>This is a configurable demo assumption, not a CPCB or school policy threshold.</small>
+          </div>
+          <label class="attestation"><input type="checkbox" id="verifyData"> I have checked the source, permission and metadata for this station file. I understand HTTPS alone does not verify the source.</label>
+          <button id="runReview" class="button primary" type="button" disabled>Run local review</button>
+          <p id="uploadStatus" class="status-line" aria-live="polite">Select a CSV to begin. The supplied historical workbook is not eligible for this model.</p>
+        </div>
+        <aside class="panel method-panel">
+          <span class="kicker">What the model does</span><h3>Isolation Forest · exploratory anomaly scoring</h3>
+          <p>The browser implementation fits a small Isolation Forest separately for each station with at least 30 model-eligible records. It uses AQI and the change from the previous record. This is exploratory within-uploaded-batch ranking, not a verified-baseline/new-record pipeline. Higher scores mean “more unusual relative to this uploaded batch,” not a probability or cause.</p>
+          <ul class="check-list"><li>Malformed, duplicate and future-dated rows are held out. Stale latest records and repeated-value cue records are excluded from model fitting and scoring. Other old observations may remain as historical batch context.</li><li>Repeated exact values across three or more consecutive readings receive a transparent review cue.</li><li>The newest observation is compared with the reviewer-selected freshness window.</li><li>Review-score cutoffs are not calibrated or validated; a person must inspect official sources.</li></ul>
+          <div class="caution"><strong>No eligible official station data is bundled.</strong><br>The supplied city/day workbook has no station ID, time of day, source link, or verified provenance. It is deliberately not used to train this model.</div>
+        </aside>
+      </div>
+      <div id="results" class="panel results-panel" hidden>
+        <div class="panel-title"><div><span class="kicker">Local analysis · this browser only</span><h3>Review queue</h3><p>Flags are prompts for a human to check the source—not safety warnings.</p></div><button id="clearResults" class="button ghost" type="button">Clear results</button></div>
+        <div id="resultMetrics" class="result-metrics"></div>
+        <div id="latestRecords" class="latest-records"></div>
+        <div class="table-scroll"><table><thead><tr><th>Review cue</th><th>Station</th><th>Observed at</th><th>AQI / recent context</th><th>IF score</th><th>Source</th></tr></thead><tbody id="queueRows"></tbody></table></div>
+        <p id="heldSummary" class="status-line" aria-live="polite"></p>
+        <p id="noQueue" class="empty-state" hidden>No anomaly or repeated-value candidates were generated by the current review settings. This does not prove the data are correct.</p>
+        <div class="review-action">
+          <div><span class="kicker">Human verification only</span><h4>Record a reviewer note</h4><p>Select a queue row, check its source yourself, and record the result. This note is temporary and stays only in the current tab.</p></div>
+          <div class="review-form"><p id="selectedCandidate" class="selected-placeholder">No candidate selected.</p><label for="reviewOutcome">Reviewer outcome<select id="reviewOutcome"><option value="">Choose after checking source</option><option>Source checked · appears valid</option><option>Stale or delayed · recheck needed</option><option>Unresolved · escalate to school lead</option></select></label><label for="reviewNote">Short note<textarea id="reviewNote" rows="2" maxlength="240" placeholder="What did you verify? Do not enter student or health details."></textarea></label><button id="saveReview" class="button secondary" type="button" disabled>Add local review note</button></div>
+        </div>
+        <div id="reviewLog" class="review-log" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="workflow" class="section-block">
+      <div class="section-heading"><div><span class="kicker">03 · Human verification</span><h2>From a data cue to a school process</h2><p>The AI part ends at a review cue. The school retains authority over every real-world action.</p></div><span class="section-index">03</span></div>
+      <div class="flow-grid">
+        <article class="flow-card"><span>01 · DATA</span><h3>Official station history</h3><p>Reviewer obtains timestamped information from a verified source and records station, units/method where published, and source link.</p></article>
+        <article class="flow-card"><span>02 · CHECK</span><h3>Validate before scoring</h3><p>Hold incomplete, duplicate, malformed, future-dated, or stale records for human checking; never fill a missing value silently.</p></article>
+        <article class="flow-card ai-card"><span>03 · AI REVIEW CUE</span><h3>Prioritize unusual records</h3><p>Isolation Forest score plus simple repeated-value and freshness cues. A score is not a probability, explanation, or diagnosis.</p></article>
+        <article class="flow-card"><span>04 · PERSON</span><h3>Verify the source</h3><p>A focal person checks the original reading, timestamp and context, then records valid, stale or unresolved.</p></article>
+        <article class="flow-card final-card"><span>05 · SCHOOL LEAD</span><h3>Check current directions</h3><p>Only school leadership applies current CAQM/GNCTD orders to school communications or operations. The prototype sends nothing.</p></article>
+      </div>
+    </section>
+
+    <section id="limits" class="section-block limits-section">
+      <div class="section-heading"><div><span class="kicker">04 · Assess impact &amp; scale</span><h2>What is ready—and what is not</h2><p>A portfolio prototype is not evidence that a school pilot has happened.</p></div><span class="section-index">04</span></div>
+      <div class="limits-grid"><article class="panel"><h3>Implemented here</h3><ul class="check-list"><li>Historical monthly summary from the supplied AQI workbook.</li><li>Local CSV parsing, required-field and duplicate checks.</li><li>Station-specific Isolation Forest scoring for eligible uploads.</li><li>Reviewer queue and temporary in-tab note log.</li><li>Offline use; no external service or server is required.</li></ul></article><article class="panel pending-panel"><h3>Needs validation before any pilot</h3><ul class="check-list"><li>Verified station-level data, source, units/method and authorized use.</li><li>Manual labels and evaluation of false alerts, missed issues and reviewer workload.</li><li>School feedback, privacy review, accessibility and a safe fallback process.</li><li>Current official directions and school-lead approval for any real communication.</li></ul></article></div>
+      <div class="guardrail-band"><strong>Hard guardrail:</strong> The prototype cannot issue health advice, decide whether classes close or change mode, determine order applicability, or send an alert. No student or individual health information should be entered.</div>
+      <div class="sources"><strong>Project references</strong><a href="https://airquality.cpcb.gov.in/AQI_India/" target="_blank" rel="noopener noreferrer">CPCB National AQI</a><a href="https://caqm.nic.in/landingpage/pages/grap/grap-orders" target="_blank" rel="noopener noreferrer">CAQM GRAP orders</a><span>See the portfolio PDFs for the original assignment references and design details.</span></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-inner"><span>Thiruveedhi Thanusree · B.Tech III Year CSE-AI · Section A</span><span>Concept prototype · historical data only · not a live service</span></div></footer>
+</body>
+</html>

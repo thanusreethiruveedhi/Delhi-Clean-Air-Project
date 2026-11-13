@@ -1,0 +1,4 @@
+# Browser prototype; no build outputs are required.
+.DS_Store
+Thumbs.db
+*.log
