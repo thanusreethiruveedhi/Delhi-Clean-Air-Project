@@ -1,8 +1,8 @@
 # Delhi School Clean-Air Readiness Loop
 
-**Portfolio project by Thiruveedhi Thanusree**  
+**Portfolio project by Thiruveedhi Thanusree from team GREEN TRIO **  
 B.Tech III Year, CSE-AI, Section A · Roll No. 242TA31243
-
+ 
 ## What this project is
 
 This is an offline, student-built prototype for a human-verified school clean-air readiness workflow. It has two separate parts:
@@ -12,14 +12,6 @@ This is an offline, student-built prototype for a human-verified school clean-ai
 
 The model is an educational prototype implementation, not a validated service. It fits and ranks the same uploaded batch, not a separately reviewed historical baseline versus new records as proposed for the future 3B pilot. It is not the scikit-learn library; the browser code uses the original higher-is-more-unusual score direction, whereas scikit-learn score_samples uses lower-is-more-abnormal scores. Higher scores mean more unusual relative to the uploaded batch; a score is **not** a probability, cause, health warning, or proof that a measurement is wrong.
 
-## Open the prototype (no install needed)
-
-1. Download and extract the project ZIP to a folder on your computer.
-2. Open the `Delhi_Clean_Air_Readiness_Loop` folder.
-3. Double-click `index.html`. If needed, right-click it and choose **Open with** and a browser such as Chrome, Edge, or Firefox.
-4. The dashboard and historical chart work offline. The AI review runs only after you choose a suitable local CSV file.
-
-No server, account, Python, or internet connection is needed to open the page. External reference links need internet only if you click them.
 
 ## Try a data review
 
