@@ -63,6 +63,3 @@ The supplied workbook has no provided source URL or documentation of AQI method/
 
 Technical reference: [scikit-learn IsolationForest documentation](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html). This project implements a small JavaScript educational variant; it does not call scikit-learn.
 
-## Public sharing
-
-The original dataset source and licence are not documented. The pack is prepared for the internship submission, not a grant of dataset redistribution rights. Before publishing the dataset publicly (for example in GitHub), ask the mentor/source owner about permission; the project code can be shared without claiming ownership of external data.
